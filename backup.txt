@@ -1,0 +1,75 @@
+from flask import Flask, jsonify, request
+from database.database import db
+from database.user import Users
+from datetime import datetime
+
+app = Flask(__name__)
+
+@app.before_request
+def before_request():
+    db.connect()
+
+
+@app.route('/get_massa',methods=['GET'])
+def obter_get():
+     return jsonify({"massa": "pegou"})
+
+@app.route('/create_user', methods=['POST'])
+def create_user():
+    new_user = request.get_json()
+    
+    if db.is_closed():
+        return jsonify({'error': 'Database is not connected'}), 500
+
+    try:
+        user = Users.create(
+            name=new_user['name'],
+            password=new_user['password'],
+            email=new_user.get('email')
+        )
+        return jsonify({'id': user.id, 'name': user.name}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/get_users', methods=['GET'])
+def get_users():
+    try:
+        if db.is_closed():
+            db.connect()
+
+        users = Users.select()
+
+        user_list = []
+        for user in users:
+            user_list.append({
+                'id': user.id,
+                'name': user.name,
+                'email': user.email,
+                'createddate': user.createddate.isoformat()  # Use o nome correto
+            })
+
+        return jsonify(user_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+    finally:
+        if not db.is_closed():
+            db.close()
+
+@app.route('/test_connection', methods=['GET'])
+def test_connection():
+    try:
+        if db.is_closed():
+            db.connect()
+        
+        users = Users.select()
+        return jsonify({'message': 'Connection successful', 'user_count': users.count()}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+    finally:
+        if not db.is_closed():
+            db.close()
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
