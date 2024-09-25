@@ -59,7 +59,6 @@ def update_upser(id):
         user.password = updated_data.get('password', user.password)
         user.email = updated_data.get('email', user.email)
         user.save()
-
         return jsonify({'message':'User updated successfully'}),200
     except Exception as e:
         return jsonify({'error': str(e)})
