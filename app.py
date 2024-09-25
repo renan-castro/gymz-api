@@ -5,6 +5,7 @@
 from flask import Flask, jsonify, request
 from database.database import db
 from database.user import Users
+from database.exercice import Exercices
 
 app = Flask(__name__)
 
@@ -59,6 +60,10 @@ def update_upser(id):
         user.password = updated_data.get('password', user.password)
         user.email = updated_data.get('email', user.email)
         user.save()
+<<<<<<< HEAD
+=======
+
+>>>>>>> renan
         return jsonify({'message':'User updated successfully'}),200
     except Exception as e:
         return jsonify({'error': str(e)})
@@ -88,6 +93,83 @@ def delete_user(id):
     except Exception as e:
         return jsonify({'error': str(e)}),400
 
+<<<<<<< HEAD
+=======
+@app.route('/api/get_exercices', methods=['GET'])
+def get_exercices():
+    try:
+        exercices = Exercices.select()
+
+        exercices_list = []
+        for exercice in exercices:
+            exercices_list.append({
+                'id': exercice.id,
+                'series': exercice.series,
+                'repeats': exercice.repeats,
+                'days': exercice.days,
+            })
+
+        return jsonify(exercices_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400 
+    
+@app.route('/api/get_exercices/<int:id>', methods=['GET'])
+def get_exercice(id):
+    
+    try:
+        exercice = Exercices.get_by_id(id)
+        return jsonify({
+            'id': exercice.id,
+            'series': exercice.series,
+            'repeats': exercice.repeats,
+            'days': exercice.days,
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    
+@app.route('/api/update_exercice/<int:id>', methods=['PUT'])
+def update_exercice(id):
+    
+    updated_data = request.get_json()
+    try:
+        exercice = Exercices.get_by_id(id)
+        exercice.series = updated_data.get('series', exercice.series) #Caso não tiver sido passado nenhum valor, manterá o valor presente no banco de dados
+        exercice.repeats = updated_data.get('repeats', exercice.repeats)
+        exercice.days = updated_data.get('days', exercice.days)
+        exercice.save()
+
+        return jsonify({'message':'Exercice updated successfully'}),200
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route('/api/create_exercice', methods=['POST'])
+def create_exercice():
+    new_exercice = request.get_json()
+
+    try:
+        new_exercice = Exercices.create(
+            id = new_exercice.get('id'),
+            name = new_exercice.get('name'),
+            series = new_exercice.get('series'),
+            repeats = new_exercice.get('repeats'),
+            days = new_exercice.get('days')
+        )
+            
+        return jsonify({'id': new_exercice.id, 'name': new_exercice.name, 'series': new_exercice.series, 'repeats': new_exercice.repeats, 'days': new_exercice.days}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}),400
+    
+@app.route('/api/delete_exercice/<int:id>', methods=['DELETE'])
+def delete_exercice(id):
+    
+    try:
+        Exercices.delete_by_id(id)
+        return jsonify({'message':'Exercice deleted successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}),400
+
+>>>>>>> renan
 
 if __name__ == '__main__':
     app.run(debug=True)
