@@ -6,6 +6,7 @@ from flask import Flask, jsonify, request
 from database.database import db
 from database.user import Users
 from database.exercice import Exercices
+from database.user_exercice import UserExercices
 
 app = Flask(__name__)
 
@@ -60,10 +61,6 @@ def update_upser(id):
         user.password = updated_data.get('password', user.password)
         user.email = updated_data.get('email', user.email)
         user.save()
-<<<<<<< HEAD
-=======
-
->>>>>>> renan
         return jsonify({'message':'User updated successfully'}),200
     except Exception as e:
         return jsonify({'error': str(e)})
@@ -93,8 +90,6 @@ def delete_user(id):
     except Exception as e:
         return jsonify({'error': str(e)}),400
 
-<<<<<<< HEAD
-=======
 @app.route('/api/get_exercices', methods=['GET'])
 def get_exercices():
     try:
@@ -169,7 +164,43 @@ def delete_exercice(id):
     except Exception as e:
         return jsonify({'error': str(e)}),400
 
->>>>>>> renan
+@app.route('/api/get_users_exercices', methods=['GET'])
+def get_users_exercices():
+    try:
+        users_exercices = UserExercices.select()
+        users_exercices_list = []
+
+        for ue in users_exercices:
+            users_exercices_list.append({
+                'user_id': ue.user.id,
+                'exercice_id': ue.exercice.id
+            })
+        
+        return jsonify(users_exercices_list), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 400
+
+
+@app.route('/api/get_user_exercices/<int:id>', methods=['GET'])
+def get_user_exercice(id):
+    try:
+
+        user_exercices = UserExercices.select().where(UserExercices.user == id)
+        exercices_list = []
+
+        for ue in user_exercices:
+            exercices_list.append({
+                'exercice_id': ue.exercice.id,
+                'name': ue.exercice.name,
+                'series': ue.exercice.series,
+                'repeats': ue.exercice.repeats,
+                'days': ue.exercice.days,
+            })
+
+        return jsonify(exercices_list), 200 
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
